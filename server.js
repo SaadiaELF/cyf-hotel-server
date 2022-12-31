@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const uuid = require("uuid");
+const moment = require("moment");
 
 const app = express();
 
@@ -9,6 +10,7 @@ app.use(cors());
 
 //Use this array as your (in-memory) data store.
 const bookings = require("./bookings.json");
+const e = require("express");
 
 // Functions
 function isInvalidId(id, index, response) {
@@ -24,6 +26,25 @@ app.get("/", function (request, response) {
 // Get all bookings
 app.get("/bookings", function (request, response) {
   response.status(200).json(bookings);
+});
+
+// Search bookings
+app.get("/bookings/search", function (request, response) {
+  let date = request.query.date;
+  if (date) {
+    let filteredBookings = bookings.filter(
+      (elt) =>
+        moment(elt.checkInDate) <= moment(date) &&
+        moment(elt.checkOutDate) >= moment(date)
+    );
+    if (filteredBookings.length == 0) {
+      response.status(400).send("No matching results");
+    } else {
+      response.status(200).json(filteredBookings);
+    }
+  } else {
+    response.status(400).send("Please enter search term");
+  }
 });
 
 // Get one booking by id
