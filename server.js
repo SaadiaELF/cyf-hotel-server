@@ -18,6 +18,18 @@ app.get("/bookings", function (request, response) {
   response.status(200).json(bookings);
 });
 
+// Get one booking by id
+app.get("/bookings/:id", function (request, response) {
+  let booking = bookings.find((elt) => elt.id == request.params.id);
+  if (booking) {
+    response.status(200).json(booking);
+  } else {
+    response
+      .status(400)
+      .send("No booking with the Id '" + request.params.id + "' is found");
+  }
+});
+
 const listener = app.listen(process.env.PORT, function () {
   console.log("Your app is listening on port " + listener.address().port);
 });
