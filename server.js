@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const uuid = require("uuid");
 const moment = require("moment");
+const validator = require("email-validator");
 
 const app = express();
 
@@ -65,6 +66,14 @@ app.post("/bookings", function (request, response) {
     if (!request.body[key]) {
       response.status(400).send("Please enter all fields");
     }
+  }
+
+  if (validator.validate(request.body.email) === false) {
+    response.status(400).send("Please enter a valid email");
+  }
+
+  if (moment(request.body.checkInDate) > moment(request.body.checkOutDate)) {
+    response.status(400).send("Please enter a valid dates");
   }
 
   const newBooking = {
