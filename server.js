@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const uuid = require("uuid");
 
 const app = express();
 
@@ -35,6 +36,29 @@ app.get("/bookings/:id", function (request, response) {
       .status(400)
       .send("No booking with the Id '" + request.params.id + "' is found");
   }
+});
+
+// Create new booking
+app.post("/bookings", function (request, response) {
+  for (const key in bookings[0]) {
+    if (!request.body[key]) {
+      response.status(400).send("Please enter all fields");
+    }
+  }
+
+  const newBooking = {
+    id: uuid.v4(),
+    roomId: request.body.roomId,
+    title: request.body.title,
+    firstName: request.body.firstName,
+    username: request.body.username,
+    email: request.body.email,
+    checkInDate: request.body.checkInDate,
+    checkOutDate: request.body.checkOutDate,
+  };
+
+  bookings.push(newBooking);
+  response.status(200).json(bookings);
 });
 
 // Delete one booking by id
