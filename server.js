@@ -20,30 +20,47 @@ function isInvalidId(id, index, response) {
   }
 }
 
+function ValidateSearch(arr, response) {
+  if (arr.length == 0) {
+    response.status(400).send("No matching results");
+  } else {
+    response.json(arr);
+  }
+}
+
 app.get("/", function (request, response) {
   response.send("Hotel booking server.  Ask for /bookings, etc.");
 });
 
 // Get all bookings
 app.get("/bookings", function (request, response) {
-  response.status(200).json(bookings);
+  response.json(bookings);
 });
 
 // Search bookings
 app.get("/bookings/search", function (request, response) {
   let date = request.query.date;
+  let term = request.query.term.toLowerCase();
+
   if (date) {
     let filteredBookings = bookings.filter(
       (elt) =>
         moment(elt.checkInDate) <= moment(date) &&
         moment(elt.checkOutDate) >= moment(date)
     );
-    if (filteredBookings.length == 0) {
-      response.status(400).send("No matching results");
-    } else {
-      response.status(200).json(filteredBookings);
-    }
-  } else {
+    ValidateSearch(filteredBookings, response);
+  }
+
+  if (term) {
+    let filteredBookings = bookings.filter(
+      (elt) =>
+        elt.firstName.toLowerCase().includes(term) ||
+        elt.surname.toLowerCase().includes(term) ||
+        elt.email.toLowerCase().includes(term)
+    );
+    ValidateSearch(filteredBookings, response);
+  }
+  if (!term && !date) {
     response.status(400).send("Please enter search term");
   }
 });
@@ -52,7 +69,7 @@ app.get("/bookings/search", function (request, response) {
 app.get("/bookings/:id", function (request, response) {
   let booking = bookings.find((elt) => elt.id == request.params.id);
   if (booking) {
-    response.status(200).json(booking);
+    response.json(booking);
   } else {
     response
       .status(400)
@@ -88,7 +105,7 @@ app.post("/bookings", function (request, response) {
   };
 
   bookings.push(newBooking);
-  response.status(200).json(bookings);
+  response.json(bookings);
 });
 
 // Delete one booking by id
@@ -98,7 +115,7 @@ app.delete("/bookings/:id", function (request, response) {
   isInvalidId(request.params.id, bookingIndex, response);
 
   bookings.splice(bookingIndex, 1);
-  response.status(200).json({
+  response.json({
     msg: "booking successfully deleted",
     bookings: bookings,
   });
